@@ -269,7 +269,11 @@ int solve(int arr[N][N], int stat[N][N], int countPossible[N][N])
 
                     // Must check whether this is the last number to fill
                     whetherFinish = checkWhetherFinish(stat);
-                    if(whetherFinish==1) return solSuccess;
+                    if(whetherFinish==1) 
+                    {
+                        stat[i][j] = statFix;
+                        return solSuccess;
+                    }
 
                     resultSol = solve(arr,stat,countPossible);
                     if(resultSol == solFail)
