@@ -1,5 +1,10 @@
 import numpy as np 
 
+verbose = True
+stepbystep = True
+if not stepbystep:
+    verbose = False
+
 N = 9
 
 statInit = 0
@@ -12,8 +17,26 @@ solSuccess = 1
 fileName = "input.txt"
 
 def writeArr(arr):
-    print(" -----------------------")
+    # print(" -----------------------")
+    # for i in range(N):
+    #     for j in range(N):
+    #         if j == 0:
+    #             print(f"| {arr[i,j]} ", end="")
+    #         elif j == 3 or j == 6:
+    #             print(f"| {arr[i,j]} ", end="")
+    #         elif j == 8:
+    #             print(f"{arr[i,j]} |")
+    #         else:
+    #             print(arr[i,j], end=" ")
+    #     if i == 2 or i == 5:
+    #         print("|-----------------------|")
+    # print(" -----------------------")
+
+    print("    1 2 3   4 5 6   7 8 9 ")
+    # print("    | | |   | | |   | | | ")
+    print("   -----------------------")
     for i in range(N):
+        print('{:d}-'.format(i+1),end='')
         for j in range(N):
             if j == 0:
                 print(f"| {arr[i,j]} ", end="")
@@ -24,8 +47,8 @@ def writeArr(arr):
             else:
                 print(arr[i,j], end=" ")
         if i == 2 or i == 5:
-            print("|-----------------------|")
-    print(" -----------------------")
+            print("  |-----------------------|")
+    print("   -----------------------")
 
 def readArr(arr, fileName):
     with open(fileName, 'r') as file:
@@ -59,6 +82,12 @@ def check_whether_finish(stat):
         return False
 
 def solve(arr, stat, countPossible):
+    if stepbystep:
+        print('\nCurrent Matrix = ')
+        writeArr(arr)
+        print('\n')
+        input('Press any key to continue......')
+
     indicator = np.zeros(N, dtype=int)
     countAllPossibleNumbers = 0
 
@@ -90,6 +119,8 @@ def solve(arr, stat, countPossible):
                 totalUnoccupied = N - totalOccupied
 
                 if totalUnoccupied == 0:
+                    if verbose:
+                        print('\nDeadend at ({:d},{:d})={:d}... \n\n'.format(i+1,j+1,arr[i,j]))
                     return solFail
                 elif totalUnoccupied == 1:
                     possibleNumber = get_all_possible_numbers(indicator)
@@ -97,6 +128,8 @@ def solve(arr, stat, countPossible):
                     arr[i,j] = possibleNumber[0]
                     stat[i,j] = statTry
                     countPossible[i,j] = 0
+                    if verbose:
+                        print('\nFill ({:d},{:d})={:d}'.format(i+1,j+1,possibleNumber[0]))
 
                     whetherFinish = check_whether_finish(stat)
                     if whetherFinish == 1:
@@ -105,16 +138,21 @@ def solve(arr, stat, countPossible):
 
                     resultSol = solve(arr, stat, countPossible)
                     if resultSol == solFail:
+                        if verbose:
+                            print('\nDeadend at ({:d},{:d})={:d}... \n'.format(i+1,j+1,arr[i,j]))
                         stat[i,j] = statUnknown
                         arr[i,j] = 0
                         return solFail
                     elif resultSol == solSuccess:
+                        if verbose:
+                            print('\nFix ({:d},{:d})={:d} \n\n'.format(i+1,j+1,arr[i,j]))
                         stat[i,j] = statFix
                         return solSuccess
                 else:
                     possibleNumber = get_all_possible_numbers(indicator)
                     countAllPossibleNumbers = len(possibleNumber)
                     countPossible[i,j] = countAllPossibleNumbers
+
 
     imin = -1
     jmin = -1
@@ -151,16 +189,25 @@ def solve(arr, stat, countPossible):
     countAllPossibleNumbers = len(possibleNumber)
     stat[imin,jmin] = statTry
 
+    if verbose:
+        print('\nBegin to try ({:d},{:d})..\n'.format(imin+1,jmin+1))
+
     for ic in range(countAllPossibleNumbers):
         arr[imin,jmin] = possibleNumber[ic]
         resultSol = solve(arr, stat, countPossible)
 
         if resultSol == solSuccess:
+            if verbose:
+                print('\nFix ({:d},{:d})={:d} \n'.format(imin+1,jmin+1,arr[imin,jmin]))
             stat[imin,jmin] = statFix
             return solSuccess
         if resultSol == solFail:
+            if verbose:
+                print('\nFail at ({:d},{:d})={:d}, try next number \n'.format(imin+1,jmin+1,arr[imin,jmin]))
             continue
 
+    if verbose:
+        print('\nDeadend at ({:d},{:d})... \n'.format(imin+1,jmin+1))
     stat[imin,jmin] = statUnknown
     return solFail
 
@@ -182,6 +229,8 @@ def main():
             else:
                 stat[i,j] = statInit
 
+    if verbose:
+        print('Begin to solve ......')
 
     resultSol = solve(arr, stat, countPossible)
 
